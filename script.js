@@ -330,17 +330,32 @@ function renderLogTable(logs) {
   const pageColorMap = {};
   state.pages.forEach(p => { pageColorMap[p.id] = p.color; });
 
+  // ກວດ field names ຈາກ record ທຳອິດ
+  const sample = logs[0];
+  // Backend ສົ່ງ: timestamp, pageId, pageName, imageName, caption, status, detail
+  // ຫຼື ອາດສົ່ງຄ່າດ້ວຍ index ຖ້າ headers ຜິດ
   document.getElementById('logBody').innerHTML = logs.map(log => {
-    const color = pageColorMap[log.pageId] || '#7a91b0';
+    // ຮອງຮັບທັງ 2 ຮູບແບບ
+    const ts        = log.timestamp  || log[0] || '—';
+    const pid       = log.pageId     || log[1] || '';
+    const pname     = log.pageName   || log[2] || `Page ${pid}`;
+    const img       = log.imageName  || log[3] || '—';
+    const cap       = log.caption    || log[4] || '—';
+    const stat      = log.status     || log[5] || 'UNKNOWN';
+    const det       = log.detail     || log[6] || '—';
+
+    const color = pageColorMap[pid] || '#7a91b0';
+    const statClass = stat === 'SUCCESS' ? 'SUCCESS' : stat === 'FAILED' ? 'FAILED' : 'SKIPPED';
+
     return `
     <tr>
-      <td class="td-mono">${formatDateTime(log.timestamp)}</td>
-      <td><span style="color:${color};font-weight:600">${escHtml(log.pageName || `Page ${log.pageId}`)}</span></td>
-      <td class="td-mono">${escHtml(log.imageName || '—')}</td>
-      <td class="td-caption" title="${escHtml(log.caption || '')}">${escHtml(log.caption || '—')}</td>
-      <td><span class="status-badge ${log.status}">${log.status}</span></td>
+      <td class="td-mono">${formatDateTime(ts)}</td>
+      <td><span style="color:${color};font-weight:600">${escHtml(String(pname))}</span></td>
+      <td class="td-mono">${escHtml(String(img))}</td>
+      <td class="td-caption" title="${escHtml(String(cap))}">${escHtml(String(cap))}</td>
+      <td><span class="status-badge ${statClass}">${escHtml(String(stat))}</span></td>
       <td class="td-mono" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
-          title="${escHtml(log.detail || '')}">${escHtml(log.detail || '—')}</td>
+          title="${escHtml(String(det))}">${escHtml(String(det))}</td>
     </tr>`;
   }).join('');
 }
