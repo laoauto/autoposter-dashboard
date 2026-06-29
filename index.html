@@ -11,13 +11,24 @@
 <body>
   <!-- ── SIDEBAR ─────────────────────────────────────── -->
   <aside class="sidebar">
+    <!-- Logo + Admin -->
     <div class="sidebar-logo">
-      <div class="logo-icon">
+      <img
+        src="https://drive.google.com/thumbnail?id=18oePgvHs2vpVLC487gm7rfywAbhDvROK&sz=w80"
+        alt="Logo"
+        class="sidebar-logo-img"
+        onerror="this.style.display='none';document.getElementById('logoFallback').style.display='flex'"
+      />
+      <div class="logo-icon" id="logoFallback" style="display:none">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
           <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
         </svg>
       </div>
-      <span>AutoPoster</span>
+      <div class="sidebar-logo-text">
+        <span class="sidebar-system-name">FB AutoPoster</span>
+        <span class="sidebar-admin-name">ຜູ້ບໍລິຫານ</span>
+        <span class="sidebar-admin-name2">MR ROCKKEY SIHALATH</span>
+      </div>
     </div>
 
     <nav class="sidebar-nav">
