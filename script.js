@@ -408,22 +408,89 @@ async function submitManualPost() {
   btn.disabled = true;
   btn.textContent = scheduleTime ? 'Scheduling…' : 'Posting…';
 
+  // ── ສະແດງ Status ໃນ Card ──
+  setCardStatus(pageId, 'posting', scheduleTime ? 'ກຳລັງກຳນົດເວລາ…' : 'ກຳລັງໂພດ…');
+
+  // ຂັ້ນຕອນ 1: ດຶງຮູບ
+  setCardStatus(pageId, 'posting', '📁 ກຳລັງດຶງຮູບຈາກ Drive…');
+  await sleep(600);
+
+  // ຂັ້ນຕອນ 2: Gemini AI
+  if (!caption) {
+    setCardStatus(pageId, 'posting', '🤖 Gemini AI ກຳລັງສ້າງ Caption…');
+    await sleep(800);
+  }
+
+  // ຂັ້ນຕອນ 3: ໂພດ
+  setCardStatus(pageId, 'posting', '📤 ກຳລັງໂພດໃສ່ Facebook…');
+
   try {
     const res = await apiPost({ action: 'manualPost', pageId, customCaption: caption, scheduleTime });
     if (res.success) {
-      showToast(res.message || 'Posted!', 'success');
+      setCardStatus(pageId, 'success', '✅ ໂພດສຳເລັດແລ້ວ!');
+      showToast(res.message || 'ໂພດສຳເລັດ!', 'success');
       closeModal('pageModal');
-      setTimeout(refreshDashboard, 1500);
+      setTimeout(() => {
+        clearCardStatus(pageId);
+        refreshDashboard();
+      }, 3000);
     } else {
+      setCardStatus(pageId, 'error', '❌ ' + (res.message || 'ໂພດບໍ່ສຳເລັດ'));
       showToast(res.message || 'Post failed', 'error');
+      setTimeout(() => clearCardStatus(pageId), 4000);
     }
   } catch (err) {
+    setCardStatus(pageId, 'error', '❌ Error: ' + err.message);
     showToast('Error: ' + err.message, 'error');
+    setTimeout(() => clearCardStatus(pageId), 4000);
   } finally {
     btn.disabled = false;
     btn.textContent = scheduleTime ? 'Schedule' : 'Post Now';
   }
 }
+
+// ── ຟັງຊັ້ນສະແດງ Status ໃນ Card ──────────────────────────────
+function setCardStatus(pageId, type, message) {
+  const card = document.getElementById(`card-${pageId}`);
+  if (!card) return;
+  let statusEl = card.querySelector('.card-live-status');
+  if (!statusEl) {
+    statusEl = document.createElement('div');
+    statusEl.className = 'card-live-status';
+    const body = card.querySelector('.page-card-body');
+    if (body) body.insertBefore(statusEl, body.firstChild);
+  }
+  const colors = { posting: '#f59e0b', success: '#10b981', error: '#ef4444' };
+  statusEl.style.cssText = `
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12.5px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    background: ${colors[type]}18;
+    border: 1px solid ${colors[type]}44;
+    color: ${colors[type]};
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: pulse 1.5s infinite;
+  `;
+  if (type === 'posting') {
+    statusEl.innerHTML = `<div class="spinner" style="width:14px;height:14px;border-width:2px"></div> ${escHtml(message)}`;
+  } else {
+    statusEl.textContent = message;
+    statusEl.style.animation = 'none';
+  }
+}
+
+function clearCardStatus(pageId) {
+  const card = document.getElementById(`card-${pageId}`);
+  if (!card) return;
+  const el = card.querySelector('.card-live-status');
+  if (el) el.remove();
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 // ── MODAL: PAGE SETTINGS ─────────────────────────────────────
 function openSettingsModal(pageId) {
