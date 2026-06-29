@@ -56,16 +56,23 @@ async function apiGet(action, params = {}) {
   url.searchParams.set('action', action);
   Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
 
-  const res = await fetch(url.toString());
+  const res = await fetch(url.toString(), {
+    method: 'GET',
+    redirect: 'follow',
+  });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json();
 }
 
 async function apiPost(payload) {
-  const res = await fetch(APPS_SCRIPT_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
+  // Apps Script Web App: ສົ່ງ payload ຜ່ານ GET parameter ເພື່ອຫຼີກລ່ຽງ CORS
+  const url = new URL(APPS_SCRIPT_URL);
+  url.searchParams.set('action', payload.action);
+  url.searchParams.set('payload', JSON.stringify(payload));
+
+  const res = await fetch(url.toString(), {
+    method: 'GET',
+    redirect: 'follow',
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json();
