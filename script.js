@@ -19,9 +19,25 @@ let state = {
 document.addEventListener('DOMContentLoaded', () => {
   initNav();
   renderOfficeRoom();
+  startIdleOfficeAnimation();
+  startLiveClock();
   refreshDashboard();
-  setInterval(refreshDashboard, 60000);
+  setInterval(refreshDashboard, 8000);
 });
+
+// ── LIVE CLOCK (real-time) ─────────────────────────────────────
+function startLiveClock() {
+  function tick() {
+    const el = document.getElementById('liveClock');
+    if (!el) return;
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('lo-LA', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const timeStr = now.toLocaleTimeString('lo-LA', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    el.textContent = '🕐 ' + dateStr + ' — ' + timeStr;
+  }
+  tick();
+  setInterval(tick, 1000);
+}
 
 // ── NAVIGATION ───────────────────────────────────────────────
 function initNav() {
@@ -140,7 +156,88 @@ function updateTopStats(data) {
     return d.toDateString() === today.toDateString() && s.status === 'PENDING';
   }).length;
   document.getElementById('statScheduled').textContent = todayScheduled;
+
+  // ── ສ້າງລາຍລະອຽດສຳລັບແຕ່ລະ Stat Card ──
+  renderStatDetailPosts(pages);
+  renderStatDetailPages(pages);
+  renderStatDetailPending(pages);
+  renderStatDetailScheduled(schedule, pages, today);
 }
+
+function renderStatDetailPosts(pages) {
+  var body = document.getElementById('statDetailPostsBody');
+  var rows = pages.map(function(p) {
+    var lastPostTxt = p.lastPost && p.lastPost.status === 'SUCCESS' ? formatRelTime(p.lastPost.timestamp) : 'ຍັງບໍ່ມີໂພດມື້ນີ້';
+    return '<div class="stat-detail-row"><span class="stat-detail-dot" style="background:' + p.color + '"></span>' +
+      '<strong>' + escHtml(p.name) + '</strong> — ໂພດແລ້ວທັງໝົດ ' + (p.totalPosted || 0) + ' ຄັ້ງ · ຫຼ້າສຸດ: ' + lastPostTxt + '</div>';
+  }).join('');
+  body.innerHTML = rows || '<div class="stat-detail-empty">ບໍ່ມີຂໍ້ມູນ</div>';
+}
+
+function renderStatDetailPages(pages) {
+  var body = document.getElementById('statDetailPagesBody');
+  var rows = pages.map(function(p) {
+    var statusTxt = p.autoPostEnabled ? '✅ ເປີດໂພດອັດຕະໂນມັດ' : '⏸️ ປິດໂພດອັດຕະໂນມັດ';
+    return '<div class="stat-detail-row"><span class="stat-detail-dot" style="background:' + p.color + '"></span>' +
+      '<strong>' + escHtml(p.name) + '</strong> — ' + statusTxt + '</div>';
+  }).join('');
+  body.innerHTML = rows || '<div class="stat-detail-empty">ບໍ່ມີຂໍ້ມູນ</div>';
+}
+
+function renderStatDetailPending(pages) {
+  var body = document.getElementById('statDetailPendingBody');
+  var rows = pages.map(function(p) {
+    return '<div class="stat-detail-row"><span class="stat-detail-dot" style="background:' + p.color + '"></span>' +
+      '<strong>' + escHtml(p.name) + '</strong> — ' + (p.pendingImages || 0) + ' ຮູບລໍຖ້າໂພດ</div>';
+  }).join('');
+  body.innerHTML = rows || '<div class="stat-detail-empty">ບໍ່ມີຂໍ້ມູນ</div>';
+}
+
+function renderStatDetailScheduled(schedule, pages, today) {
+  var body = document.getElementById('statDetailScheduledBody');
+  var pageNameMap = {}, pageColorMap = {};
+  pages.forEach(function(p) { pageNameMap[p.id] = p.name; pageColorMap[p.id] = p.color; });
+
+  var todayItems = schedule.filter(function(s) {
+    if (!s.scheduledTime) return false;
+    var d = new Date(s.scheduledTime);
+    return d.toDateString() === today.toDateString() && s.status === 'PENDING';
+  });
+
+  if (!todayItems.length) {
+    body.innerHTML = '<div class="stat-detail-empty">ບໍ່ມີລາຍການກຳນົດເວລາສຳລັບມື້ນີ້</div>';
+    return;
+  }
+
+  body.innerHTML = todayItems.map(function(s) {
+    var pname = pageNameMap[s.pageId] || ('ເພຈ ' + s.pageId);
+    var color = pageColorMap[s.pageId] || '#7a91b0';
+    var timeTxt = formatDateTime(s.scheduledTime);
+    return '<div class="stat-detail-row"><span class="stat-detail-dot" style="background:' + color + '"></span>' +
+      '<strong>' + escHtml(pname) + '</strong> — ' + timeTxt + ' (' + escHtml(s.caption ? 'ມີແຄບຊັ້ນແລ້ວ' : 'AI ຈະຂຽນແຄບຊັ້ນ') + ')</div>';
+  }).join('');
+}
+
+function toggleStatDetail(panelId) {
+  var panel = document.getElementById(panelId);
+  var allPanels = document.querySelectorAll('.stat-detail-panel');
+  var allCards = document.querySelectorAll('.stat-card-clickable');
+  var wasOpen = panel.classList.contains('open');
+
+  allPanels.forEach(function(p) { p.classList.remove('open'); });
+  allCards.forEach(function(c) { c.classList.remove('open'); });
+
+  if (!wasOpen) {
+    panel.classList.add('open');
+    // ໝາຍ Card ທີ່ກົງກັນວ່າເປີດຢູ່
+    var cardMap = {
+      statDetailPosts: 0, statDetailPages: 1, statDetailPending: 2, statDetailScheduled: 3
+    };
+    var idx = cardMap[panelId];
+    if (idx != null && allCards[idx]) allCards[idx].classList.add('open');
+  }
+}
+
 
 // ── PAGE CARDS ───────────────────────────────────────────────
 function renderPageCards() {
@@ -235,8 +332,50 @@ function handleToggle(pageId) {
 
 // ── SCHEDULE VIEW ────────────────────────────────────────────
 function renderScheduleView() {
-  renderWeekCalendar();
-  renderUpcomingPosts();
+  if (!state.logs.length) {
+    apiGet('getLog', { limit: 100 }).then(function(data) {
+      state.logs = data || [];
+      renderWeekCalendar();
+      renderUpcomingPosts();
+    }).catch(function() {
+      renderWeekCalendar();
+      renderUpcomingPosts();
+    });
+  } else {
+    renderWeekCalendar();
+    renderUpcomingPosts();
+  }
+}
+
+function getBlinkStatusForSlot(page, timeStr, dayIdx, todayIdx) {
+  // ກວດສະຖານະພຽງສະເພາະຖັນ "ມື້ນີ້" ເທົ່ານັ້ນ; ມື້ອື່ນສະແດງສີແດງ (ລໍຖ້າ)
+  if (dayIdx !== todayIdx) return 'red';
+
+  var now = new Date();
+  var parts = timeStr.split(':');
+  var slotTime = new Date(now);
+  slotTime.setHours(parseInt(parts[0]) || 0, parseInt(parts[1]) || 0, 0, 0);
+
+  // ກວດວ່າມີໂພດສຳເລັດສຳລັບເພຈນີ້ ໃນຊ່ວງເວລາໃກ້ກັບ slot ນີ້ບໍ່ (±20 ນາທີ)
+  var todayStr = now.toDateString();
+  var matchedSuccess = state.logs.some(function(l) {
+    var lts = l.timestamp || l[0];
+    var lpid = l.pageId || l[1];
+    var lstat = l.status || l[5];
+    if (String(lpid) !== String(page.id) || lstat !== 'SUCCESS') return false;
+    var ld = new Date(lts);
+    if (ld.toDateString() !== todayStr) return false;
+    var diffMin = Math.abs(ld.getTime() - slotTime.getTime()) / 60000;
+    return diffMin <= 90;
+  });
+  if (matchedSuccess) return 'green';
+
+  var diffMs = slotTime.getTime() - now.getTime();
+  var diffMin = diffMs / 60000;
+
+  if (diffMin <= 30 && diffMin >= -30) return 'yellow'; // ໃກ້ຮອດເວລາ
+  if (diffMin < -30) return 'red'; // ເລີຍເວລາໄປແລ້ວ ບໍ່ມີຮູບ/ບໍ່ສຳເລັດ → ລໍຖ້າມື້ໃໝ່
+  return 'red'; // ຍັງບໍ່ຮອດເວລາ (ໄກກວ່າ 30 ນາທີ) → ສະຖານະລໍຖ້າ
 }
 
 function renderWeekCalendar() {
@@ -252,10 +391,11 @@ function renderWeekCalendar() {
   state.pages.forEach(function(page) {
     var postTimes = Array.isArray(page.postTimes) ? page.postTimes : [];
     html += '<div class="cal-row"><div class="cal-page-label"><div class="cal-page-dot" style="background:' + page.color + '"></div>' + escHtml(page.name) + '</div>' +
-      days.map(function() {
+      days.map(function(_, dayIdx) {
         if (!page.autoPostEnabled) return '<div class="cal-cell"></div>';
         var chips = postTimes.map(function(t) {
-          return '<div class="cal-time-chip" style="background:' + page.color + '22;color:' + page.color + '">' + t + '</div>';
+          var blinkStatus = getBlinkStatusForSlot(page, t, dayIdx, todayIdx);
+          return '<div class="cal-time-chip" style="background:' + page.color + '22;color:' + page.color + '"><span class="blink-dot ' + blinkStatus + '"></span>' + t + '</div>';
         }).join('');
         return '<div class="cal-cell">' + chips + '</div>';
       }).join('') + '</div>';
@@ -291,6 +431,7 @@ function renderUpcomingPosts() {
 // ── LOG VIEW ─────────────────────────────────────────────────
 function loadLog() {
   document.getElementById('logBody').innerHTML = '<tr><td colspan="6" class="empty-cell"><div class="spinner" style="margin:0 auto"></div></td></tr>';
+  populateLogPageFilter();
 
   apiGet('getLog', { limit: 100 }).then(function(data) {
     state.logs = data || [];
@@ -298,6 +439,15 @@ function loadLog() {
   }).catch(function(err) {
     document.getElementById('logBody').innerHTML = '<tr><td colspan="6" class="empty-cell">ໂຫຼດປະຫວັດບໍ່ສຳເລັດ: ' + escHtml(err.message) + '</td></tr>';
   });
+}
+
+function populateLogPageFilter() {
+  var sel = document.getElementById('logPageFilter');
+  if (!state.pages.length) return;
+  var currentVal = sel.value;
+  sel.innerHTML = '<option value="">ທຸກເພຈ</option>' +
+    state.pages.map(function(p) { return '<option value="' + p.id + '">' + escHtml(p.name) + '</option>'; }).join('');
+  sel.value = currentVal;
 }
 
 function filterLog() {
@@ -384,7 +534,8 @@ function renderGallery() {
 
   var pageColorMap = {};
   var pageNameMap = {};
-  state.pages.forEach(function(p) { pageColorMap[p.id] = p.color; pageNameMap[p.id] = p.name; });
+  var pageLogoMap = {};
+  state.pages.forEach(function(p) { pageColorMap[p.id] = p.color; pageNameMap[p.id] = p.name; pageLogoMap[p.id] = p.logoUrl; });
 
   var filtered = logs.filter(function(l) {
     var imgUrl = l.imageUrl || l[7];
@@ -401,7 +552,7 @@ function renderGallery() {
     return;
   }
 
-  document.getElementById('galleryGrid').innerHTML = filtered.map(function(l) {
+  function renderItem(l) {
     var ts = l.timestamp || l[0];
     var pid = l.pageId || l[1];
     var pname = l.pageName || l[2] || pageNameMap[pid] || ('ເພຈ ' + pid);
@@ -418,7 +569,36 @@ function renderGallery() {
         '<div class="gallery-item-time">' + formatDateTime(ts) + '</div>' +
       '</div>' +
     '</div>';
-  }).join('');
+  }
+
+  // ຖ້າເລືອກສະເພາະເພຈ → ສະແດງ Grid ປົກກະຕິ
+  if (pageFilter) {
+    document.getElementById('galleryGrid').innerHTML = filtered.map(renderItem).join('');
+    return;
+  }
+
+  // ຖ້າ "ທຸກເພຈ" → ຈັດກຸ່ມຕາມເພຈ ພ້ອມຫົວຂໍ້ແຍກ
+  var grouped = {};
+  filtered.forEach(function(l) {
+    var pid = l.pageId || l[1];
+    if (!grouped[pid]) grouped[pid] = [];
+    grouped[pid].push(l);
+  });
+
+  var html = '';
+  state.pages.forEach(function(p) {
+    var items = grouped[p.id];
+    if (!items || !items.length) return;
+    var logoHtml = p.logoUrl
+      ? '<img src="' + escHtml(p.logoUrl) + '" class="gallery-section-logo" alt="" onerror="this.style.display=\'none\'" />'
+      : '<span class="gallery-section-dot" style="background:' + p.color + '"></span>';
+    html += '<div class="gallery-section-header">' + logoHtml +
+      '<span style="color:' + p.color + '">' + escHtml(p.name) + '</span>' +
+      '<span class="gallery-section-count">' + items.length + ' ຮູບ</span></div>';
+    html += '<div class="gallery-section-grid">' + items.map(renderItem).join('') + '</div>';
+  });
+
+  document.getElementById('galleryGrid').innerHTML = html || '<div class="empty-state">ຍັງບໍ່ມີຮູບທີ່ໂພດສຳເລັດ.</div>';
 }
 
 // ── IMAGE PREVIEW MODAL ────────────────────────────────────────
@@ -465,7 +645,7 @@ function renderSettingsView() {
       return '<div class="settings-card">' +
         '<div class="settings-card-header">' +
           '<div class="settings-card-title" style="display:flex;align-items:center;gap:10px">' +
-            '<div style="width:10px;height:10px;border-radius:50%;background:' + page.color + ';flex-shrink:0"></div>' +
+            '<div class="settings-card-logo">' + pageLogoHtml(page, 32) + '</div>' +
             escHtml(page.name) +
             '<span class="status-badge ' + (page.autoPostEnabled ? 'SUCCESS' : 'SKIPPED') + '" style="margin-left:4px">' +
               (page.autoPostEnabled ? 'ໂພດອັດຕະໂນມັດ: ເປີດ' : 'ໂພດອັດຕະໂນມັດ: ປິດ') +
@@ -473,7 +653,7 @@ function renderSettingsView() {
           '</div>' +
           '<div style="display:flex;gap:8px">' +
             '<button class="btn btn-ghost btn-sm" onclick="openPostModal(' + page.id + ')">ໂພດດ່ວນ</button>' +
-            '<button class="btn btn-primary btn-sm" onclick="openSettingsModal(' + page.id + ')">ແກ້ໄຂຕາຕະລາງ</button>' +
+            '<button class="btn btn-primary btn-sm" onclick="openSettingsModal(' + page.id + ')">ແກ້ໄຂການຕັ້ງຄ່າ</button>' +
           '</div>' +
         '</div>' +
         '<div class="settings-card-body">' +
@@ -481,6 +661,8 @@ function renderSettingsView() {
           '<div class="settings-item"><div class="settings-item-label">ເວລາໂພດ</div><div class="settings-item-value">' + ((page.postTimes || []).join(', ') || '—') + '</div></div>' +
           '<div class="settings-item"><div class="settings-item-label">ຮູບລໍຖ້າໂພດ</div><div class="settings-item-value">' + (page.pendingImages || 0) + ' ຮູບ</div></div>' +
           '<div class="settings-item"><div class="settings-item-label">ເບີໂທຕິດຕໍ່</div><div class="settings-item-value">' + (page.phone ? escHtml(page.phone) : '—') + '</div></div>' +
+          '<div class="settings-item"><div class="settings-item-label">ໂທນສຽງແບຣນ</div><div class="settings-item-value">' + (page.brandVoice ? escHtml(page.brandVoice) : '—') + '</div></div>' +
+          '<div class="settings-item"><div class="settings-item-label">ໂພດແລ້ວທັງໝົດ</div><div class="settings-item-value">' + (page.totalPosted || 0) + ' ຄັ້ງ</div></div>' +
         '</div>' +
       '</div>';
     }).join('') +
@@ -572,6 +754,8 @@ function sleep(ms) { return new Promise(function(r) { setTimeout(r, ms); }); }
 
 // ============================================================
 //  ຫ້ອງການເຮັດວຽກ — OFFICE WORKFLOW ANIMATION
+//  ປົກກະຕິ (ບໍ່ມີຄຳສັ່ງ): ພະນັກງານທຸກພະແນກຍ່າງເລາະຫຼີ້ນ (idle)
+//  ເມື່ອມີຄຳສັ່ງ: ພະນັກງານຍ່າງຖືແຟ້ມເອກະສານ ເຮັດວຽກທີລະພະແນກ
 // ============================================================
 
 var OFFICE_DEPARTMENTS = [
@@ -580,6 +764,8 @@ var OFFICE_DEPARTMENTS = [
   { key: 'publish', title: 'ພະແນກ 3 — ສື່ສານ',        subtitle: 'ໂພດໃສ່ Facebook',         icon: 'send' },
   { key: 'archive', title: 'ພະແນກ 4 — ຈັດເກັບ',       subtitle: 'ຍ້າຍຮູບ + ບັນທຶກ Log',    icon: 'check' }
 ];
+
+var officeIsBusy = false; // ກວດວ່າມີວຽກ Active ຢູ່ບໍ່ (ປິດ Idle ຊົ່ວຄາວ)
 
 function characterSvg(icon, mood) {
   var skin = '#f4c89e';
@@ -593,6 +779,9 @@ function characterSvg(icon, mood) {
     face = '<circle cx="44" cy="36" r="1.4" fill="#1e293b"/><circle cx="56" cy="36" r="1.4" fill="#1e293b"/><path d="M46 42 Q50 44 54 42" stroke="#1e293b" stroke-width="1.5" fill="none" stroke-linecap="round"/>';
   }
   var armRot = mood === 'working' ? 8 : 0;
+  var folderHtml = (mood === 'working')
+    ? '<rect x="58" y="48" width="16" height="12" rx="1" fill="#fbbf24" stroke="#b45309" stroke-width="1" transform="rotate(-10 66 54)"/>'
+    : '';
   return '<svg viewBox="0 0 100 100">' +
     '<rect x="10" y="72" width="80" height="8" rx="2" fill="#334155"/>' +
     '<rect x="14" y="80" width="6" height="14" fill="#1e293b"/>' +
@@ -606,6 +795,7 @@ function characterSvg(icon, mood) {
     face +
     '<rect x="34" y="55" width="6" height="14" rx="3" fill="' + skin + '" transform="rotate(' + (-armRot) + ' 37 55)"/>' +
     '<rect x="60" y="55" width="6" height="14" rx="3" fill="' + skin + '" transform="rotate(' + armRot + ' 63 55)"/>' +
+    folderHtml +
   '</svg>';
 }
 
@@ -620,8 +810,8 @@ function renderOfficeRoom() {
         '<div><div class="office-desk-title">' + dept.title + '</div><div class="office-desk-subtitle">' + dept.subtitle + '</div></div>' +
       '</div>' +
       '<div class="office-scene">' +
-        '<div class="office-character" id="char-' + dept.key + '">' + characterSvg(dept.icon, 'idle') + '</div>' +
-        '<div class="office-status-badge idle" id="badge-' + dept.key + '">ລໍຖ້າ</div>' +
+        '<div class="office-character idle-walking" id="char-' + dept.key + '">' + characterSvg(dept.icon, 'idle') + '</div>' +
+        '<div class="office-status-badge idle" id="badge-' + dept.key + '">ບໍ່ມີຄຳສັ່ງ — ພັກຢູ່</div>' +
         '<div class="office-task-text" id="task-' + dept.key + '"></div>' +
         '<div class="office-progress-track"><div class="office-progress-fill" id="progress-' + dept.key + '"></div></div>' +
       '</div>' +
@@ -629,15 +819,33 @@ function renderOfficeRoom() {
   }).join('');
 }
 
+// ── ໃຫ້ພະນັກງານຍ່າງເລາະຫຼີ້ນຕອນບໍ່ມີຄຳສັ່ງ (Idle Loop) ──────────
+function startIdleOfficeAnimation() {
+  // ໃສ່ class idle-walking ໃຫ້ທຸກຕົວທີ່ບໍ່ໄດ້ Busy ຢູ່
+  setInterval(function() {
+    if (officeIsBusy) return;
+    OFFICE_DEPARTMENTS.forEach(function(dept) {
+      var char = document.getElementById('char-' + dept.key);
+      if (char && !char.classList.contains('idle-walking')) {
+        char.classList.add('idle-walking');
+      }
+    });
+  }, 1000);
+}
+
 function setDeskState(key, mood, badgeText, badgeClass, taskText, progress) {
   var char = document.getElementById('char-' + key);
   var badge = document.getElementById('badge-' + key);
   var task = document.getElementById('task-' + key);
   var prog = document.getElementById('progress-' + key);
+  var desk = document.getElementById('desk-' + key);
   if (char) {
     var dept = OFFICE_DEPARTMENTS.find(function(d) { return d.key === key; });
     char.innerHTML = characterSvg(dept.icon, mood);
-    char.classList.toggle('working', mood === 'working');
+    char.classList.remove('idle-walking', 'carrying');
+    if (mood === 'working') {
+      char.classList.add('carrying');
+    }
   }
   if (badge) {
     badge.className = 'office-status-badge ' + badgeClass;
@@ -645,27 +853,47 @@ function setDeskState(key, mood, badgeText, badgeClass, taskText, progress) {
   }
   if (task) task.textContent = taskText || '';
   if (prog) prog.style.width = (progress || 0) + '%';
+  if (desk) desk.classList.toggle('active-desk', mood === 'working');
+}
+
+function resetDeskToIdle(key) {
+  var char = document.getElementById('char-' + key);
+  var badge = document.getElementById('badge-' + key);
+  var task = document.getElementById('task-' + key);
+  var prog = document.getElementById('progress-' + key);
+  var desk = document.getElementById('desk-' + key);
+  if (char) {
+    var dept = OFFICE_DEPARTMENTS.find(function(d) { return d.key === key; });
+    char.innerHTML = characterSvg(dept.icon, 'idle');
+    char.classList.remove('carrying');
+    char.classList.add('idle-walking');
+  }
+  if (badge) { badge.className = 'office-status-badge idle'; badge.textContent = 'ບໍ່ມີຄຳສັ່ງ — ພັກຢູ່'; }
+  if (task) task.textContent = '';
+  if (prog) prog.style.width = '0%';
+  if (desk) desk.classList.remove('active-desk');
 }
 
 function runOfficeWorkflowAnimation(pageId, usingAI) {
   var page = state.pages.find(function(p) { return p.id == pageId; });
   var pageName = page ? page.name : ('ເພຈ ' + pageId);
 
+  officeIsBusy = true;
   renderOfficeRoom();
 
   return sleep(150)
     .then(function() {
-      setDeskState('fetch', 'working', 'ກຳລັງເຮັດວຽກ', 'working', 'ກຳລັງຄົ້ນຫາຮູບສຳລັບ ' + pageName + '…', 30);
+      setDeskState('fetch', 'working', '📂 ກຳລັງເຮັດວຽກ', 'working', 'ກຳລັງຍ່າງໄປເອົາແຟ້ມຮູບສຳລັບ ' + pageName + '…', 30);
       return sleep(500);
     })
     .then(function() {
-      setDeskState('fetch', 'working', 'ກຳລັງເຮັດວຽກ', 'working', 'ພົບຮູບແລ້ວ ກຳລັງດາວໂຫຼດ…', 80);
+      setDeskState('fetch', 'working', '📂 ກຳລັງເຮັດວຽກ', 'working', 'ພົບແຟ້ມຮູບແລ້ວ ກຳລັງຖືອອກມາ…', 80);
       return sleep(500);
     })
     .then(function() {
-      setDeskState('fetch', 'done', 'ສຳເລັດ', 'done', 'ດຶງຮູບສຳເລັດແລ້ວ ✓', 100);
+      setDeskState('fetch', 'done', '✓ ສຳເລັດ', 'done', 'ສົ່ງແຟ້ມຮູບໄປພະແນກ AI ແລ້ວ', 100);
       if (usingAI) {
-        setDeskState('ai', 'working', 'ກຳລັງເຮັດວຽກ', 'working', 'ກຳລັງວິເຄາະຮູບພາບ…', 25);
+        setDeskState('ai', 'working', '🧠 ກຳລັງເຮັດວຽກ', 'working', 'ໄດ້ຮັບແຟ້ມຮູບ ກຳລັງວິເຄາະ…', 25);
         return sleep(600);
       } else {
         setDeskState('ai', 'done', 'ຂ້າມ', 'idle', 'ໃຊ້ແຄບຊັ້ນທີ່ຜູ້ໃຊ້ຂຽນເອງ', 100);
@@ -674,32 +902,43 @@ function runOfficeWorkflowAnimation(pageId, usingAI) {
     })
     .then(function() {
       if (usingAI) {
-        setDeskState('ai', 'working', 'ກຳລັງເຮັດວຽກ', 'working', 'ກຳລັງຂຽນແຄບຊັ້ນພາສາລາວ…', 65);
+        setDeskState('ai', 'working', '🧠 ກຳລັງເຮັດວຽກ', 'working', 'ກຳລັງຂຽນແຄບຊັ້ນພາສາລາວ…', 65);
         return sleep(700);
       }
     })
     .then(function() {
-      if (usingAI) setDeskState('ai', 'done', 'ສຳເລັດ', 'done', 'ຂຽນແຄບຊັ້ນສຳເລັດແລ້ວ ✓', 100);
-      setDeskState('publish', 'working', 'ກຳລັງເຮັດວຽກ', 'working', 'ກຳລັງສົ່ງຂໍ້ມູນໄປ Facebook…', 40);
+      if (usingAI) setDeskState('ai', 'done', '✓ ສຳເລັດ', 'done', 'ຂຽນແຄບຊັ້ນແລ້ວ ສົ່ງແຟ້ມຕໍ່ໄປພະແນກສື່ສານ', 100);
+      setDeskState('publish', 'working', '📤 ກຳລັງເຮັດວຽກ', 'working', 'ໄດ້ຮັບແຟ້ມແລ້ວ ກຳລັງສົ່ງຂໍ້ມູນໄປ Facebook…', 40);
       return sleep(700);
     })
     .then(function() {
-      setDeskState('publish', 'working', 'ກຳລັງເຮັດວຽກ', 'working', 'ກຳລັງລໍຖ້າຄຳຕອບຈາກ Facebook…', 85);
+      setDeskState('publish', 'working', '📤 ກຳລັງເຮັດວຽກ', 'working', 'ກຳລັງລໍຖ້າຄຳຕອບຈາກ Facebook…', 85);
       return sleep(500);
     })
     .then(function() {
-      setDeskState('archive', 'working', 'ກຳລັງເຮັດວຽກ', 'working', 'ກຳລັງລໍຖ້າຜົນການໂພດ…', 50);
+      setDeskState('archive', 'working', '🗂️ ກຳລັງເຮັດວຽກ', 'working', 'ກຳລັງລໍຖ້າຜົນການໂພດ…', 50);
     });
 }
 
 function setOfficeAllDone(pageId) {
-  setDeskState('publish', 'done', 'ສຳເລັດ', 'done', 'ໂພດສຳເລັດແລ້ວ ✓', 100);
-  setDeskState('archive', 'done', 'ສຳເລັດ', 'done', 'ຍ້າຍຮູບ ແລະ ບັນທຶກ Log ແລ້ວ ✓', 100);
+  setDeskState('publish', 'done', '✓ ສຳເລັດ', 'done', 'ໂພດສຳເລັດແລ້ວ ສົ່ງແຟ້ມຕໍ່ໄປຈັດເກັບ', 100);
+  setDeskState('archive', 'done', '✓ ສຳເລັດ', 'done', 'ຍ້າຍຮູບ ແລະ ບັນທຶກ Log ສຳເລັດ — ວຽກຮອບນີ້ຈົບສົມບູນ', 100);
+
+  // ຫຼັງສຳເລັດ → ກັບເຂົ້າ Idle ຫຼັງຈາກ 4 ວິ
+  setTimeout(function() {
+    officeIsBusy = false;
+    OFFICE_DEPARTMENTS.forEach(function(d) { resetDeskToIdle(d.key); });
+  }, 4000);
 }
 
 function setOfficeError(pageId, message) {
-  setDeskState('publish', 'error', 'ຜິດພາດ', 'error', message || 'ເກີດຂໍ້ຜິດພາດ', 100);
-  setDeskState('archive', 'idle', 'ຢຸດແລ້ວ', 'idle', 'ບໍ່ໄດ້ດຳເນີນການຕໍ່', 0);
+  setDeskState('publish', 'error', '✗ ຜິດພາດ', 'error', message || 'ເກີດຂໍ້ຜິດພາດ', 100);
+  setDeskState('archive', 'idle', 'ຢຸດແລ້ວ', 'idle', 'ບໍ່ໄດ້ດຳເນີນການຕໍ່ ເພາະພະແນກກ່ອນໜ້າຜິດພາດ', 0);
+
+  setTimeout(function() {
+    officeIsBusy = false;
+    OFFICE_DEPARTMENTS.forEach(function(d) { resetDeskToIdle(d.key); });
+  }, 5000);
 }
 
 // ── MODAL: PAGE SETTINGS ─────────────────────────────────────
@@ -708,8 +947,12 @@ function openSettingsModal(pageId) {
   if (!page) return;
 
   document.getElementById('settingsPageId').value = pageId;
-  document.getElementById('settingsModalTitle').textContent = page.name + ' — ຕັ້ງຄ່າຕາຕະລາງ';
+  document.getElementById('settingsModalTitle').textContent = page.name + ' — ຕັ້ງຄ່າເພຈ';
   document.getElementById('settingsPostsPerDay').value = page.postsPerDay || 1;
+  document.getElementById('settingsPhone').value = page.phone || '';
+  document.getElementById('settingsBrandVoice').value = page.brandVoice || '';
+  document.getElementById('settingsLogoUrl').value = page.logoUrl || '';
+  previewSettingsLogo();
 
   var times = Array.isArray(page.postTimes) && page.postTimes.length ? page.postTimes : ['09:00'];
   document.getElementById('timeSlots').innerHTML = '';
@@ -719,6 +962,36 @@ function openSettingsModal(pageId) {
   document.getElementById('settingsToggle').classList.toggle('on', state.settingsToggleOn);
 
   openModal('settingsModal');
+}
+
+// ── ປ່ຽນລິ້ງ Google Drive ໃດໆ ໃຫ້ເປັນລິ້ງສະແດງຮູບ (thumbnail) ──
+function convertDriveLink(url) {
+  if (!url) return '';
+  url = url.trim();
+  var m = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (m && m[1]) {
+    return 'https://drive.google.com/thumbnail?id=' + m[1] + '&sz=w300';
+  }
+  return url; // ບໍ່ແມ່ນລິ້ງ Drive ມາດຕະຖານ → ໃຊ້ຄືເກົ່າ
+}
+
+function previewSettingsLogo() {
+  var rawUrl = document.getElementById('settingsLogoUrl').value;
+  var img = document.getElementById('settingsLogoPreviewImg');
+  var fallback = document.getElementById('settingsLogoPreviewFallback');
+  var converted = convertDriveLink(rawUrl);
+  if (converted) {
+    img.src = converted;
+    img.style.display = 'block';
+    fallback.style.display = 'none';
+    img.onerror = function() {
+      img.style.display = 'none';
+      fallback.style.display = 'block';
+    };
+  } else {
+    img.style.display = 'none';
+    fallback.style.display = 'block';
+  }
 }
 
 function addTimeSlot(value, containerId) {
@@ -742,13 +1015,26 @@ function submitSettings() {
   var pageId = document.getElementById('settingsPageId').value;
   var postsPerDay = parseInt(document.getElementById('settingsPostsPerDay').value) || 1;
   var autoPostEnabled = state.settingsToggleOn;
+  var phone = document.getElementById('settingsPhone').value.trim();
+  var brandVoice = document.getElementById('settingsBrandVoice').value.trim();
+  var logoUrlRaw = document.getElementById('settingsLogoUrl').value.trim();
+  var logoUrl = convertDriveLink(logoUrlRaw);
 
   var timeInputs = document.querySelectorAll('#timeSlots .time-slot-input');
   var postTimes = Array.from(timeInputs).map(function(i) { return i.value; }).filter(Boolean);
 
   if (!postTimes.length) { showToast('ກະລຸນາເພີ່ມເວລາໂພດຢ່າງໜ້ອຍໜຶ່ງເວລາ', 'error'); return; }
 
-  apiPost({ action: 'saveSettings', pageId: pageId, postsPerDay: postsPerDay, postTimes: postTimes, autoPostEnabled: autoPostEnabled })
+  apiPost({
+    action: 'saveSettings',
+    pageId: pageId,
+    postsPerDay: postsPerDay,
+    postTimes: postTimes,
+    autoPostEnabled: autoPostEnabled,
+    phone: phone,
+    brandVoice: brandVoice,
+    logoUrl: logoUrl
+  })
     .then(function(res) {
       if (res.success) {
         showToast(res.message || 'ບັນທຶກສຳເລັດ!', 'success');
