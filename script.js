@@ -258,6 +258,29 @@ function pageLogoHtml(page, size) {
   return '<div class="page-logo-fallback" style="width:' + size + 'px;height:' + size + 'px;background:' + page.color + '">' + escHtml((page.name || '?')[0]) + '</div>';
 }
 
+// ── ຕົວລະຄອນ Pixel-art AI ປະຈຳໂຕະ (SVG blocky monitor-bot, ໃຊ້ສີຂອງເພຈ) ──
+function deskAvatarSvg(page) {
+  var c = page.color;
+  return '' +
+  '<svg viewBox="0 0 64 64" class="desk-avatar-svg" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">' +
+    '<rect x="16" y="48" width="32" height="4" fill="#0a0e1c"/>' +
+    '<rect x="28" y="42" width="8" height="6" fill="#161d38"/>' +
+    '<rect x="12" y="16" width="40" height="28" rx="2" fill="#0c1226" stroke="' + c + '" stroke-width="2"/>' +
+    '<rect x="16" y="20" width="32" height="20" fill="#050813"/>' +
+    '<rect class="desk-avatar-eye" x="22" y="27" width="5" height="5" fill="' + c + '"/>' +
+    '<rect class="desk-avatar-eye" x="37" y="27" width="5" height="5" fill="' + c + '"/>' +
+    '<rect class="desk-avatar-mouth" x="25" y="35" width="14" height="2" fill="' + c + '" opacity="0.85"/>' +
+    '<rect x="30" y="6" width="4" height="10" fill="#3a4568"/>' +
+    '<circle class="desk-avatar-blip" cx="32" cy="5" r="3.5" fill="' + c + '"/>' +
+    '<rect x="14" y="46" width="36" height="5" rx="1" fill="#161d38"/>' +
+    '<rect x="18" y="47.5" width="4" height="2" fill="' + c + '" opacity="0.5"/>' +
+    '<rect x="24" y="47.5" width="4" height="2" fill="' + c + '" opacity="0.5"/>' +
+    '<rect x="30" y="47.5" width="4" height="2" fill="' + c + '" opacity="0.5"/>' +
+    '<rect x="36" y="47.5" width="4" height="2" fill="' + c + '" opacity="0.5"/>' +
+    '<rect x="42" y="47.5" width="4" height="2" fill="' + c + '" opacity="0.5"/>' +
+  '</svg>';
+}
+
 function renderPageCard(page) {
   var postTimes = Array.isArray(page.postTimes) ? page.postTimes : ['—'];
   var pillsHtml = postTimes.map(function(t) {
@@ -277,34 +300,54 @@ function renderPageCard(page) {
   }
 
   var phoneHtml = page.phone ? ('<div class="page-card-phone">📞 ' + escHtml(page.phone) + '</div>') : '';
+  var isOn = !!page.autoPostEnabled;
+  var deskStateClass = isOn ? 'active' : 'idle-off';
+  var statusLabel = isOn ? 'ONLINE' : 'OFFLINE';
 
   return '' +
-  '<div class="page-card" id="card-' + page.id + '">' +
-    '<div class="page-card-accent" style="background:' + page.color + '"></div>' +
-    '<div class="page-card-header">' +
-      '<div class="page-card-header-left">' +
-        '<div class="page-logo-wrap">' + pageLogoHtml(page) + '</div>' +
-        '<div>' +
-          '<div class="page-card-name">' + escHtml(page.name) + '</div>' +
-          '<div class="page-card-voice">' + escHtml(page.brandVoice || '') + '</div>' +
-          phoneHtml +
-        '</div>' +
-      '</div>' +
-      '<div class="toggle ' + (page.autoPostEnabled ? 'on' : '') + '" id="toggle-' + page.id + '" onclick="handleToggle(' + page.id + ')" title="' + (page.autoPostEnabled ? 'ໂພດອັດຕະໂນມັດ: ເປີດ' : 'ໂພດອັດຕະໂນມັດ: ປິດ') + '">' +
+  '<div class="page-card ' + deskStateClass + '" id="card-' + page.id + '" tabindex="0">' +
+
+    '<div class="desk-scene">' +
+      '<div class="desk-floor-glow" style="background:' + page.color + '"></div>' +
+
+      '<div class="toggle desk-power-toggle ' + (isOn ? 'on' : '') + '" id="toggle-' + page.id + '" onclick="handleToggle(' + page.id + ')" title="' + (isOn ? 'ໂພດອັດຕະໂນມັດ: ເປີດ' : 'ໂພດອັດຕະໂນມັດ: ປິດ') + '">' +
         '<div class="toggle-knob"></div>' +
       '</div>' +
-    '</div>' +
-    '<div class="page-card-body">' +
-      '<div class="page-stat-row">' +
-        '<div class="page-stat"><div class="page-stat-num" style="color:' + page.color + '">' + (page.totalPosted || 0) + '</div><div class="page-stat-lbl">ໂພດແລ້ວ</div></div>' +
-        '<div class="page-stat"><div class="page-stat-num">' + (page.pendingImages || 0) + '</div><div class="page-stat-lbl">ລໍຖ້າ</div></div>' +
-        '<div class="page-stat"><div class="page-stat-num">' + (page.postsPerDay || 1) + '</div><div class="page-stat-lbl">ຕໍ່ມື້</div></div>' +
+
+      '<div class="desk-avatar-wrap">' +
+        deskAvatarSvg(page) +
+        '<div class="desk-speech-bubble">' + lastPostHtml + '</div>' +
       '</div>' +
-      '<div class="schedule-pills">' + pillsHtml + '</div>' +
-      lastPostHtml +
-      '<div class="page-card-actions">' +
-        '<button class="btn btn-primary btn-sm" onclick="openPostModal(' + page.id + ')" style="flex:1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>ໂພດດຽວນີ້</button>' +
-        '<button class="btn btn-ghost btn-sm" onclick="openSettingsModal(' + page.id + ')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>ຕັ້ງຄ່າ</button>' +
+
+      '<div class="office-nameplate" style="border-color:' + page.color + '66">' +
+        '<div class="nameplate-logo">' + pageLogoHtml(page, 22) + '</div>' +
+        '<div class="nameplate-text">' +
+          '<span class="nameplate-name">' + escHtml(page.name) + '</span>' +
+          '<span class="nameplate-role">' + escHtml(page.brandVoice || 'AI STAFF') + '</span>' +
+          phoneHtml +
+        '</div>' +
+        '<span class="nameplate-status-badge ' + (isOn ? 'on' : 'off') + '"><span class="nameplate-status-dot"></span>' + statusLabel + '</span>' +
+      '</div>' +
+
+      '<div class="desk-fab-row">' +
+        '<button class="fab fab-post" onclick="openPostModal(' + page.id + ')" title="ໂພດດຽວນີ້">' +
+          '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>' +
+        '</button>' +
+        '<button class="fab fab-settings" onclick="openSettingsModal(' + page.id + ')" title="ຕັ້ງຄ່າ">' +
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>' +
+        '</button>' +
+      '</div>' +
+    '</div>' +
+
+    '<div class="page-card-body">' +
+      '<div class="records-content">' +
+        '<div class="records-panel-title">📋 DEPARTMENT RECORDS</div>' +
+        '<div class="page-stat-row">' +
+          '<div class="page-stat"><div class="page-stat-num" style="color:' + page.color + '">' + (page.totalPosted || 0) + '</div><div class="page-stat-lbl">ໂພດແລ້ວ</div></div>' +
+          '<div class="page-stat"><div class="page-stat-num">' + (page.pendingImages || 0) + '</div><div class="page-stat-lbl">ລໍຖ້າ</div></div>' +
+          '<div class="page-stat"><div class="page-stat-num">' + (page.postsPerDay || 1) + '</div><div class="page-stat-lbl">ຕໍ່ມື້</div></div>' +
+        '</div>' +
+        '<div class="schedule-pills">' + pillsHtml + '</div>' +
       '</div>' +
     '</div>' +
   '</div>';
