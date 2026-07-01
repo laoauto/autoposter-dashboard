@@ -1,0 +1,19 @@
+{
+  "name": "FB AutoPoster — ລະບົບໂພດອັດຕະໂນມັດ",
+  "short_name": "FB AutoPoster",
+  "description": "ລະບົບຈັດການ ແລະ ໂພດອັດຕະໂນມັດສຳລັບ Facebook, ບໍລິຫານໂດຍ MR ROCKKEY SIHALATH",
+  "id": "/",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#05070f",
+  "theme_color": "#0a0e1a",
+  "lang": "lo",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
