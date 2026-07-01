@@ -5,21 +5,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FB AutoPoster — ລະບົບໂພດອັດຕະໂນມັດ</title>
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="https://drive.google.com/thumbnail?id=18oePgvHs2vpVLC487gm7rfywAbhDvROK&sz=w64" />
-  <link rel="apple-touch-icon" href="https://drive.google.com/thumbnail?id=18oePgvHs2vpVLC487gm7rfywAbhDvROK&sz=w180" />
+  <!-- PWA Manifest — controls the icon/name shown when "Added to Home Screen" -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0a0e1a" />
+
+  <!-- Favicon / Home Screen icons (self-hosted — Google Drive hotlinks are unreliable for this) -->
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="64x64" href="icons/favicon-64.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="FB AutoPoster" />
 
   <!-- Open Graph / Link Preview (Facebook, Messenger, LINE, ...) -->
   <meta property="og:title" content="FB AutoPoster — ລະບົບໂພດອັດຕະໂນມັດ" />
   <meta property="og:description" content="ລະບົບຈັດການ ແລະ ໂພດອັດຕະໂນມັດສຳລັບ 3 ເພຈ Facebook, ບໍລິຫານໂດຍ MR ROCKKEY SIHALATH" />
-  <meta property="og:image" content="https://drive.google.com/thumbnail?id=18oePgvHs2vpVLC487gm7rfywAbhDvROK&sz=w512" />
+  <meta property="og:image" content="icons/icon-512.png" />
   <meta property="og:type" content="website" />
 
   <!-- Twitter Card (ບາງແອັບໃຊ້ Tag ນີ້ແທນ) -->
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:title" content="FB AutoPoster — ລະບົບໂພດອັດຕະໂນມັດ" />
   <meta name="twitter:description" content="ລະບົບຈັດການ ແລະ ໂພດອັດຕະໂນມັດສຳລັບ 3 ເພຈ Facebook" />
-  <meta name="twitter:image" content="https://drive.google.com/thumbnail?id=18oePgvHs2vpVLC487gm7rfywAbhDvROK&sz=w512" />
+  <meta name="twitter:image" content="icons/icon-512.png" />
 
   <link rel="stylesheet" href="style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -31,7 +39,7 @@
     <!-- Logo + Admin -->
     <div class="sidebar-logo">
       <img
-        src="https://drive.google.com/thumbnail?id=18oePgvHs2vpVLC487gm7rfywAbhDvROK&sz=w80"
+        src="icons/icon-192.png"
         alt="Logo"
         class="sidebar-logo-img"
         onerror="this.style.display='none';document.getElementById('logoFallback').style.display='flex'"
