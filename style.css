@@ -214,6 +214,37 @@ body {
 .status-dot.online  { background: var(--neon-green); box-shadow: 0 0 0 3px rgba(61,255,164,0.2), 0 0 8px rgba(61,255,164,0.6); }
 .status-dot.offline { background: var(--neon-red); box-shadow: 0 0 8px rgba(255,92,108,0.6); }
 
+/* ── MOBILE IDENTITY BAR (Admin avatar — ໂຊສະເພາະໜ້າຈໍນ້ອຍ) ──────── */
+.mobile-identity-bar {
+  display: none; /* ເປີດຢູ່ media query mobile ລຸ່ມ */
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, var(--bg-surface), var(--bg-card));
+  border-bottom: 1px solid var(--border);
+}
+.mobile-identity-avatar {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--neon-cyan);
+  box-shadow: 0 0 0 3px rgba(52,229,255,0.15), 0 0 16px rgba(52,229,255,0.4);
+  flex-shrink: 0;
+}
+.mobile-identity-text { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.mobile-identity-name {
+  font-family: var(--font-pixel);
+  font-size: 11px;
+  color: var(--text-primary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.mobile-identity-role {
+  font-size: 11.5px;
+  color: var(--neon-cyan);
+  margin-top: 3px;
+}
+#statusDotMobile { flex-shrink: 0; width: 10px; height: 10px; }
+
 /* ── TOP BAR ────────────────────────────────────────────── */
 
 .topbar {
@@ -442,17 +473,17 @@ body {
 .office-nameplate {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   background: var(--bg-input);
   border: 1px solid;
   border-radius: 999px;
-  padding: 5px 12px 5px 5px;
+  padding: 6px 14px 6px 6px;
   width: fit-content;
   max-width: calc(100% - 50px);
   margin-bottom: 18px;
 }
 
-.nameplate-logo { flex-shrink: 0; line-height: 0; }
+.nameplate-logo { flex-shrink: 0; line-height: 0; border-radius: 50%; }
 
 .page-logo-img {
   border-radius: 50%;
@@ -473,7 +504,7 @@ body {
 }
 
 .nameplate-logo .page-logo-img,
-.nameplate-logo .page-logo-fallback { border: 1.5px solid rgba(255,255,255,0.15); font-size: 11px; }
+.nameplate-logo .page-logo-fallback { border: 2px solid rgba(10,14,26,0.9); font-size: 16px; font-family: var(--font-pixel); }
 
 .nameplate-text {
   display: flex;
@@ -484,7 +515,7 @@ body {
 
 .nameplate-name {
   font-family: var(--font-pixel);
-  font-size: 9.5px;
+  font-size: 11px;
   color: var(--text-primary);
   letter-spacing: 0.3px;
   white-space: nowrap;
@@ -493,7 +524,7 @@ body {
 }
 
 .nameplate-role {
-  font-size: 10.5px;
+  font-size: 11px;
   color: var(--text-muted);
   font-style: italic;
   white-space: nowrap;
@@ -1710,19 +1741,24 @@ a:focus-visible, button:focus-visible, .nav-item:focus-visible,
 
   /* ໂຊ Bottom Nav ແທນ Sidebar ທີ່ເຊື່ອງໄວ້ */
   .mobile-nav { display: flex; }
-  /* ຢ້ຽມພື້ນທີ່ລຸ່ມສຸດ ບໍ່ໃຫ້ເນື້ອຫາ/ປຸ່ມລອຍຖືກ Bottom Nav ບັງ */
-  .view { padding: 16px 16px calc(76px + env(safe-area-inset-bottom)); }
+  /* ໂຊ Admin Avatar ແບບເຕັມແຖບ ແທນ Sidebar Logo ທີ່ຖືກເຊື່ອງ */
+  .mobile-identity-bar { display: flex; }
 
-  .pages-grid { grid-template-columns: 1fr; gap: 20px; }
-  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  /* ຫຍໍ້ Padding ລົງໃຫ້ໃຊ້ພື້ນທີ່ຈໍໄດ້ເຕັມທີ່ຂຶ້ນ (ຄ້າຍແອັບ ບໍ່ແມ່ນເວັບທີ່ມີຂອບຫຼາຍ) */
+  .view { padding: 10px 10px calc(76px + env(safe-area-inset-bottom)); }
+  .section-header { margin-bottom: 12px; }
+
+  .pages-grid { grid-template-columns: 1fr; gap: 16px; }
+  .stats-row { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .settings-card-body { grid-template-columns: 1fr; }
   .office-room { grid-template-columns: 1fr; }
+  .desk-scene { padding: 16px 14px 56px; }
 
   /* ── TOPBAR: ຫຍໍ້/ຈັດລຽງໃໝ່ໃຫ້ພໍດີໜ້າຈໍນ້ອຍ, ທຸກປຸ່ມຍັງກົດໄດ້ຄົບ ── */
   .topbar {
     height: auto;
     min-height: var(--topbar-h);
-    padding: 10px 14px;
+    padding: 10px 12px;
     flex-wrap: wrap;
     gap: 8px;
     row-gap: 8px;
