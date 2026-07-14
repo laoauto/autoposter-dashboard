@@ -122,6 +122,26 @@
   <!-- ── MAIN CONTENT ─────────────────────────────────── -->
   <main class="main">
 
+    <!-- MOBILE IDENTITY BAR (ໂຊສະເພາະໜ້າຈໍນ້ອຍ ແທນ Sidebar Logo ທີ່ຖືກເຊື່ອງ) -->
+    <div class="mobile-identity-bar">
+      <img
+        src="icons/icon-192.png"
+        alt="Logo"
+        class="mobile-identity-avatar"
+        onerror="this.style.display='none';document.getElementById('mobileLogoFallback').style.display='flex'"
+      />
+      <div class="logo-icon" id="mobileLogoFallback" style="display:none">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+        </svg>
+      </div>
+      <div class="mobile-identity-text">
+        <span class="mobile-identity-name">MR ROCKKEY SIHALATH</span>
+        <span class="mobile-identity-role">ຜູ້ບໍລິຫານ · FB AutoPoster</span>
+      </div>
+      <span class="status-dot" id="statusDotMobile"></span>
+    </div>
+
     <!-- TOP BAR -->
     <header class="topbar">
       <div class="topbar-left">
