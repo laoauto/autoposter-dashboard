@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="lo">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ນະໂຍບາຍຄວາມເປັນສ່ວນຕົວ — AutoPost Manager</title>
+<style>
+  :root{
+    --bg:#0a0e1a; --card:#131a33; --border:#1f2a4d;
+    --text:#e9f1ff; --text-sub:#8ba0d6; --accent:#4F46E5;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:'Noto Sans Lao','Segoe UI',sans-serif;
+    background:var(--bg); color:var(--text);
+    line-height:1.8; padding:40px 16px;
+  }
+  .wrap{ max-width:720px; margin:0 auto; }
+  .card{
+    background:var(--card); border:1px solid var(--border);
+    border-radius:14px; padding:32px 28px; margin-bottom:20px;
+  }
+  h1{ font-size:22px; margin-bottom:6px; color:#fff; }
+  .updated{ font-size:13px; color:var(--text-sub); margin-bottom:24px; }
+  h2{ font-size:16px; color:var(--accent); margin:22px 0 8px; }
+  p, li{ font-size:14.5px; color:var(--text-sub); }
+  ul{ padding-left:20px; margin:6px 0; }
+  li{ margin-bottom:6px; }
+  a{ color:#818cf8; }
+  .contact{ font-size:14px; margin-top:6px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1>ນະໂຍບາຍຄວາມເປັນສ່ວນຕົວ (Privacy Policy)</h1>
+    <div class="updated">AutoPost Manager · ອັບເດດຫຼ້າສຸດ: 14 ກໍລະກົດ 2026</div>
+
+    <p>AutoPost Manager ("ລະບົບ", "ພວກເຮົາ") ເປັນເຄື່ອງມືພາຍໃນ (internal tool) ສຳລັບຜູ້ບໍລິຫານ Facebook Page ຂອງຕົນເອງ ໃຊ້ເພື່ອຊ່ວຍໂພດຮູບ ແລະ ຂໍ້ຄວາມໄປຍັງ Facebook Page ທີ່ຜູ້ໃຊ້ເປັນເຈົ້າຂອງ/ຜູ້ບໍລິຫານໂດຍກົງເທົ່ານັ້ນ. ລະບົບນີ້ບໍ່ໄດ້ໃຫ້ບໍລິການແກ່ບຸກຄົນທົ່ວໄປ ແລະ ບໍ່ໄດ້ເກັບຂໍ້ມູນຈາກຜູ້ເຂົ້າຊົມ Facebook Page.</p>
+
+    <h2>1. ຂໍ້ມູນທີ່ລະບົບເຂົ້າເຖິງ</h2>
+    <ul>
+      <li><strong>Facebook Page Access Token</strong> — ໃຊ້ເພື່ອສ້າງໂພດ (ຮູບ+ຂໍ້ຄວາມ) ໄປຍັງ Page ທີ່ຜູ້ໃຊ້ອະນຸຍາດເທົ່ານັ້ນ. Token ຖືກເກັບໄວ້ໃນ Google Apps Script Properties (ສ່ວນຕົວ, ບໍ່ເປີດເຜີຍ) ບໍ່ຖືກສົ່ງໄປໃຫ້ບຸກຄົນທີສາມ.</li>
+      <li><strong>ຮູບພາບສິນຄ້າ</strong> — ຈັດເກັບຢູ່ Google Drive ຂອງຜູ້ໃຊ້ເອງ ໃຊ້ເປັນວັດຖຸດິບສຳລັບການໂພດ.</li>
+      <li><strong>ຂໍ້ຄວາມແຄບຊັ້ນ (Caption)</strong> — ບາງສ່ວນສ້າງໂດຍ AI (Google Gemini API) ຈາກຮູບພາບ, ບໍ່ມີການເກັບຂໍ້ມູນສ່ວນຕົວຂອງບຸກຄົນທີສາມ.</li>
+    </ul>
+
+    <h2>2. ຈຸດປະສົງການໃຊ້ຂໍ້ມູນ</h2>
+    <p>ຂໍ້ມູນທັງໝົດຖືກໃຊ້ເພື່ອຈຸດປະສົງດຽວ: ຊ່ວຍໃຫ້ຜູ້ໃຊ້ໂພດເນື້ອຫາໄປຍັງ Facebook Page ຂອງຕົນເອງໄດ້ອັດຕະໂນມັດ. ພວກເຮົາບໍ່ຂາຍ, ບໍ່ແບ່ງປັນ, ແລະ ບໍ່ນຳຂໍ້ມູນໄປໃຊ້ເພື່ອຈຸດປະສົງອື່ນ.</p>
+
+    <h2>3. ບໍລິການພາຍນອກທີ່ເຊື່ອມຕໍ່</h2>
+    <ul>
+      <li>Google Apps Script / Google Drive / Google Sheets — ຈັດເກັບຂໍ້ມູນ ແລະ ປະຫວັດການໂພດ</li>
+      <li>Google Gemini API — ສ້າງຂໍ້ຄວາມແຄບຊັ້ນ ແລະ (ໃນບາງກໍລະນີ) ຮູບພາບ</li>
+      <li>Meta Graph API (Facebook) — ໂພດເນື້ອຫາໄປຍັງ Page</li>
+      <li>LINE Messaging API — ແຈ້ງເຕືອນຜົນການໂພດ (ຖ້າເປີດໃຊ້)</li>
+    </ul>
+    <p>ແຕ່ລະບໍລິການຂ້າງເທິງມີນະໂຍບາຍຄວາມເປັນສ່ວນຕົວຂອງຕົນເອງ ຊຶ່ງໃຊ້ຄວບຄູ່ກັບນະໂຍບາຍນີ້.</p>
+
+    <h2>4. ການເກັບຮັກສາ ແລະ ຄວາມປອດໄພ</h2>
+    <p>Token ແລະ ຂໍ້ມູນລັບທັງໝົດຖືກເກັບໄວ້ໃນ Script Properties ຂອງ Google Apps Script ຊຶ່ງເຂົ້າເຖິງໄດ້ສະເພາະເຈົ້າຂອງບັນຊີ Google ທີ່ສ້າງໂປຣເຈັກນີ້ເທົ່ານັ້ນ.</p>
+
+    <h2>5. ການລຶບຂໍ້ມູນ</h2>
+    <p>ຜູ້ໃຊ້ສາມາດລຶບຂໍ້ມູນທັງໝົດໄດ້ທຸກເວລາ ໂດຍການລຶບ Script Properties, Google Sheet, ຫຼື ຖອນການອະນຸຍາດ (Revoke) Facebook App ຈາກການຕັ້ງຄ່າບັນຊີ Facebook ຂອງຕົນເອງ.</p>
+
+    <h2>6. ຕິດຕໍ່</h2>
+    <p class="contact">ຫາກມີຄຳຖາມກ່ຽວກັບນະໂຍບາຍນີ້ ຕິດຕໍ່: <a href="mailto:rocksihalath@gmail.com">rocksihalath@gmail.com</a></p>
+  </div>
+</div>
+</body>
+</html>
