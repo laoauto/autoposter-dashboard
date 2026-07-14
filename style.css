@@ -639,7 +639,7 @@ body {
 }
 
 .fab {
-  width: 38px; height: 38px;
+  width: 40px; height: 40px;
   border-radius: 12px;
   border: 1px solid var(--border-light);
   background: var(--bg-input);
@@ -649,6 +649,10 @@ body {
   transition: all .15s ease;
 }
 .fab:hover { transform: translateY(-2px); }
+.fab:active { transform: scale(.92); }
+
+.fab-records:hover { color: var(--neon-pink); border-color: var(--neon-pink); }
+.fab-records.active-fab { color: var(--neon-pink); border-color: var(--neon-pink); }
 
 .fab-post {
   color: #06110c;
@@ -683,7 +687,8 @@ body {
   padding: 0 16px;
 }
 .page-card:hover .records-content,
-.page-card:focus-within .records-content {
+.page-card:focus-within .records-content,
+.page-card.records-open .records-content {
   max-height: 320px;
   opacity: 1;
   padding: 14px 16px 16px;
@@ -1659,6 +1664,38 @@ a:focus-visible, button:focus-visible, .nav-item:focus-visible,
 
 /* ── RESPONSIVE ─────────────────────────────────────────── */
 
+/* ── MOBILE BOTTOM NAV (ຊ่ອນໄວ້ໃນ Desktop, ໂຊເທິງໜ້າຈໍນ້ອຍ) ──────── */
+
+.mobile-nav {
+  display: none; /* ເປີດໃນ media query ລຸ່ມ */
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 500;
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border);
+  padding-bottom: env(safe-area-inset-bottom);
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.35);
+}
+
+.mobile-nav .nav-item {
+  flex-direction: column;
+  gap: 3px;
+  padding: 8px 4px 6px;
+  font-size: 10px;
+  text-align: center;
+  border-radius: 0;
+  flex: 1;
+  min-height: 52px;
+  justify-content: center;
+}
+.mobile-nav .nav-item span { white-space: nowrap; }
+.mobile-nav .nav-item.active { background: rgba(52,229,255,0.08); }
+
+/* ── ACCESSIBLE MODAL GUTTER (ບໍ່ໃຫ້ Modal ຕິດຂອບຈໍພໍດີ) ──────── */
+.modal-overlay { padding: 16px; }
+
+/* ── RESPONSIVE ─────────────────────────────────────────── */
+
 @media (max-width: 1100px) {
   .pages-grid { grid-template-columns: repeat(2, 1fr); }
   .stats-row { grid-template-columns: repeat(2, 1fr); }
@@ -1670,13 +1707,60 @@ a:focus-visible, button:focus-visible, .nav-item:focus-visible,
   :root { --sidebar-w: 0px; }
   .sidebar { display: none; }
   .main { margin-left: 0; }
-  .pages-grid { grid-template-columns: 1fr; }
+
+  /* ໂຊ Bottom Nav ແທນ Sidebar ທີ່ເຊື່ອງໄວ້ */
+  .mobile-nav { display: flex; }
+  /* ຢ້ຽມພື້ນທີ່ລຸ່ມສຸດ ບໍ່ໃຫ້ເນື້ອຫາ/ປຸ່ມລອຍຖືກ Bottom Nav ບັງ */
+  .view { padding: 16px 16px calc(76px + env(safe-area-inset-bottom)); }
+
+  .pages-grid { grid-template-columns: 1fr; gap: 20px; }
   .stats-row { grid-template-columns: repeat(2, 1fr); }
-  .view { padding: 16px; }
-  .topbar { padding: 0 16px; }
   .settings-card-body { grid-template-columns: 1fr; }
   .office-room { grid-template-columns: 1fr; }
-  /* Records panel becomes tap-to-reveal only (hover unavailable on touch);
-     :focus-within via tabindex="0" on .page-card still works on tap. */
-  .desk-speech-bubble { width: 180px; }
+
+  /* ── TOPBAR: ຫຍໍ້/ຈັດລຽງໃໝ່ໃຫ້ພໍດີໜ້າຈໍນ້ອຍ, ທຸກປຸ່ມຍັງກົດໄດ້ຄົບ ── */
+  .topbar {
+    height: auto;
+    min-height: var(--topbar-h);
+    padding: 10px 14px;
+    flex-wrap: wrap;
+    gap: 8px;
+    row-gap: 8px;
+  }
+  .topbar-left { flex-wrap: wrap; gap: 8px; row-gap: 4px; }
+  .server-time { display: none; } /* ຊ້ຳກັບ live-clock, ເຊື່ອງໃນຈໍນ້ອຍ */
+  .page-title { font-size: 15px; }
+  .topbar-right { width: 100%; justify-content: stretch; }
+  .topbar-right .btn { flex: 1; justify-content: center; padding: 9px 10px; font-size: 12px; }
+
+  /* ── ຕາຕະລາງປະຈຳອາທິດ: ເລື່ອນຂວາງໄດ້ແທນທີ່ຈະຖືກຫຍໍ້ຈົນອ່ານບໍ່ອອກ ── */
+  .schedule-calendar { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .cal-header, .cal-row { min-width: 640px; }
+
+  /* ── ຂະໜາດຈຸດແຕະ (Touch Target) ໃຫ້ໃຫຍ່ພໍດີສຳລັບນິ້ວມື ── */
+  .toggle { width: 46px; height: 26px; }
+  .toggle-knob { width: 20px; height: 20px; }
+  .toggle.on .toggle-knob { left: 23px; }
+  .fab { width: 44px; height: 44px; }
+  .btn { padding: 10px 16px; }
+  .btn-sm { padding: 8px 14px; }
+  .nav-item { min-height: 44px; }
+  .grid-opt, .time-slot-item, .color-swatch { min-height: 36px; }
+
+  /* ── Office Live tab: 2 desk widths ให้ยังโปร่ง, live-office grid already 1fr above */
+  .desk-speech-bubble { width: 200px; max-width: 70vw; }
+
+  /* ── Log/Gallery/Settings ตาราง: ให้ scroll แนวนอนแทนบีบอัดจนอ่านไม่ออก ── */
+  .log-table th, .log-table td { white-space: nowrap; }
+
+  /* ── Filter rows ในหน้า Log/Schedule: ให้ wrap ชัดเจนแทนล้นขอบ ── */
+  .filter-row { flex-wrap: wrap; }
+  .filter-row .select-input { width: 100%; }
+}
+
+@media (max-width: 400px) {
+  .mobile-nav .nav-item span { font-size: 9px; }
+  .stats-row { grid-template-columns: 1fr 1fr; }
+  .desk-fab-row { gap: 6px; }
+  .fab { width: 40px; height: 40px; }
 }
