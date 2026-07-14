@@ -124,7 +124,10 @@ function refreshDashboard() {
 
 function setStatus(s) {
   var dot = document.getElementById('statusDot');
+  var dotM = document.getElementById('statusDotMobile');
   var txt = document.getElementById('statusText');
+  var cls = s === 'online' ? 'status-dot online' : s === 'offline' ? 'status-dot offline' : 'status-dot';
+  if (dotM) dotM.className = cls;
   if (s === 'online') {
     dot.className = 'status-dot online';
     txt.textContent = 'ເຊື່ອມຕໍ່ສຳເລັດ';
@@ -319,7 +322,7 @@ function renderPageCard(page) {
       '</div>' +
 
       '<div class="office-nameplate" style="border-color:' + page.color + '66">' +
-        '<div class="nameplate-logo">' + pageLogoHtml(page, 22) + '</div>' +
+        '<div class="nameplate-logo" style="box-shadow:0 0 0 2px ' + page.color + ', 0 0 14px ' + page.color + '99">' + pageLogoHtml(page, 38) + '</div>' +
         '<div class="nameplate-text">' +
           '<span class="nameplate-name">' + escHtml(page.name) + '</span>' +
           '<span class="nameplate-role">' + escHtml(page.brandVoice || 'AI STAFF') + '</span>' +
