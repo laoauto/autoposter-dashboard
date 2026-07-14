@@ -51,8 +51,7 @@ function initNav() {
 
 function navigateTo(viewName) {
   document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
-  var navEl = document.querySelector('[data-view="' + viewName + '"]');
-  if (navEl) navEl.classList.add('active');
+  document.querySelectorAll('[data-view="' + viewName + '"]').forEach(function(navEl) { navEl.classList.add('active'); });
 
   document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active'); });
   var viewEl = document.getElementById('view-' + viewName);
@@ -330,6 +329,9 @@ function renderPageCard(page) {
       '</div>' +
 
       '<div class="desk-fab-row">' +
+        '<button class="fab fab-records" onclick="toggleRecords(' + page.id + ', event)" title="ລາຍລະອຽດ/ສະຖິຕິ">' +
+          '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>' +
+        '</button>' +
         '<button class="fab fab-post" onclick="openPostModal(' + page.id + ')" title="ໂພດດຽວນີ້">' +
           '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>' +
         '</button>' +
@@ -352,6 +354,24 @@ function renderPageCard(page) {
     '</div>' +
   '</div>';
 }
+
+// ── ເປີດ/ປິດ Panel ບັນທຶກ (Department Records) ດ້ວຍການກົດໂດຍກົງ —
+// ເປັນທາງເລືອກນອກເໜືອຈາກ hover (hover ໃຊ້ບໍ່ໄດ້ຢູ່ໜ້າຈໍສຳຜັດ/ມືຖື)
+function toggleRecords(pageId, evt) {
+  if (evt) evt.stopPropagation();
+  var card = document.getElementById('card-' + pageId);
+  if (!card) return;
+  var isOpen = card.classList.contains('records-open');
+  document.querySelectorAll('.page-card.records-open').forEach(function(c) {
+    if (c !== card) c.classList.remove('records-open');
+  });
+  card.classList.toggle('records-open', !isOpen);
+}
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.page-card')) {
+    document.querySelectorAll('.page-card.records-open').forEach(function(c) { c.classList.remove('records-open'); });
+  }
+});
 
 // ── AUTO-POST TOGGLE ─────────────────────────────────────────
 function handleToggle(pageId) {
